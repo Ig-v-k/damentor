@@ -1,3 +1,14 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:system"
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python.terminal.useEnvFile": true,
+    "files.exclude": {
+        "**/.env": true,
+        "**/.env.*": true,
+        "**/.env.example": false
+    },
+    "search.exclude": {
+        "**/.env": true,
+        "**/.env.*": true,
+        "**/.env.example": false
+    }
 }
