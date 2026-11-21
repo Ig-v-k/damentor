@@ -1,0 +1,21 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Build and tooling output
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Local logs
+*.log
