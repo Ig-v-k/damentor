@@ -306,6 +306,13 @@ def powershell_quote(value: str) -> str:
 
 def schedule_task_name(root: Path) -> str:
     project_id = hashlib.sha256(os.path.normcase(str(root)).encode("utf-8")).hexdigest()[:8]
+    project_name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", root.name).strip(" .")
+    project_name = project_name[:48] or "project"
+    return f"Damentor Daily Report {project_name} {project_id}"
+
+
+def legacy_schedule_task_name(root: Path) -> str:
+    project_id = hashlib.sha256(os.path.normcase(str(root)).encode("utf-8")).hexdigest()[:8]
     return f"Damentor Daily Report {project_id}"
 
 
@@ -339,6 +346,7 @@ def install_schedule(
         scheduled_command.extend(["--milestone", milestone])
     action_args = subprocess.list2cmdline(scheduled_command)
     task_name = schedule_task_name(root)
+    legacy_task_name = legacy_schedule_task_name(root)
     script = "; ".join(
         [
             "$action = New-ScheduledTaskAction "
@@ -355,6 +363,10 @@ def install_schedule(
             f"Register-ScheduledTask -TaskName {powershell_quote(task_name)} "
             "-Action $action -Trigger $triggers -Settings $settings "
             "-Principal $principal -Force | Out-Null",
+            f"$legacyTask = Get-ScheduledTask -TaskName {powershell_quote(legacy_task_name)} "
+            "-ErrorAction SilentlyContinue; "
+            f"if ($null -ne $legacyTask) {{ Unregister-ScheduledTask "
+            f"-TaskName {powershell_quote(legacy_task_name)} -Confirm:$false }}",
         ]
     )
     result = subprocess.run(
@@ -364,20 +376,38 @@ def install_schedule(
         check=False,
     )
     if result.returncode != 0:
-        raise RuntimeError(f"Could not register the Windows task: {result.stderr.strip()}")
+        error = result.stderr.strip()
+        if "0x80070005" in error.lower():
+            raise RuntimeError(
+                "Windows denied registering the scheduled task (0x80070005). "
+                "Retry this command in PowerShell opened with 'Run as administrator'. "
+                "If access is still denied, ask an administrator to check Task Scheduler permissions."
+            )
+        raise RuntimeError(f"Could not register the Windows task: {error}")
 
 
 def uninstall_schedule(root: Path) -> None:
     if os.name != "nt":
         raise RuntimeError("Task Scheduler setup is available only on Windows.")
     task_name = schedule_task_name(root)
-    script = (
-        f"$task = Get-ScheduledTask -TaskName {powershell_quote(task_name)} "
-        "-ErrorAction SilentlyContinue; "
-        "if ($null -eq $task) { Write-Error 'Scheduled task not found'; exit 1 }; "
-        f"Unregister-ScheduledTask -TaskName {powershell_quote(task_name)} "
-        "-Confirm:$false"
+    legacy_task_name = legacy_schedule_task_name(root)
+    task_names = (task_name, legacy_task_name)
+    script_parts = []
+    for index, name in enumerate(task_names):
+        variable = f"$task{index}"
+        script_parts.extend(
+            [
+                f"{variable} = Get-ScheduledTask -TaskName {powershell_quote(name)} "
+                "-ErrorAction SilentlyContinue",
+                f"if ($null -ne {variable}) {{ Unregister-ScheduledTask "
+                f"-TaskName {powershell_quote(name)} -Confirm:$false }}",
+            ]
+        )
+    script_parts.append(
+        "if ($null -eq $task0 -and $null -eq $task1) "
+        "{ Write-Error 'Scheduled task not found'; exit 1 }"
     )
+    script = "; ".join(script_parts)
     result = subprocess.run(
         ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
         text=True,
