@@ -4,7 +4,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor/releases)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
-[![License](https://img.shields.io/badge/License-TBD-orange)](#license)
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue)](./LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/Ig-v-k/damentor?style=social)](https://github.com/Ig-v-k/damentor/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor/network/members)
 [![GitHub issues](https://img.shields.io/github/issues/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor/issues)
@@ -19,7 +19,9 @@
 
 ## License
 
-Лицензия временно не выбрана (TBD). После выбора лицензии этот раздел и бейдж будут обновлены.
+Проект распространяется по лицензии [Apache License 2.0](./LICENSE). Вы можете скачивать, использовать и изменять код без предварительного разрешения, в том числе распространять изменённые версии, при соблюдении условий лицензии. При распространении нужно сохранить исходные уведомления об авторских правах и указать, какие файлы были изменены.
+
+Авторство исходного кода остаётся за его правообладателем; авторы изменений сохраняют авторство своих вкладов. Лицензия не требует запрашивать разрешение на каждое изменение.
 
 ## Требования
 
