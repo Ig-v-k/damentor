@@ -54,12 +54,18 @@ python .\daily-mentor.py
 
 ## Ежедневный репорт
 
-`daily-report.py` — отдельный сценарий: каждый обычный запуск создаёт новый короткий feature/bug Issue в указанном GitHub-репозитории и не изменяет файлы. В заголовке используются ASCII-маркеры `[D]` (daily), `[F]` (feature) или `[B]` (bug) и дата. Для ручного запуска с пропуском, если репорт за сегодня уже есть, укажите `--skip-existing`.
+`daily-report.py` — отдельный сценарий: каждый обычный запуск создаёт новый короткий feature/bug Issue в указанном GitHub-репозитории и не изменяет файлы. Скрипт автоматически задаёт тип `Feature`/`Bug`, label `enhancement`/`bug` и назначает Issue текущему пользователю (`@me`). Дополнительные labels, проект и milestone можно задать параметрами `--label`, `--project` и `--milestone`; `--label` можно указывать несколько раз. В заголовке используются ASCII-маркеры `[D]` (daily), `[F]` (feature) или `[B]` (bug) и дата. Для ручного запуска с пропуском, если репорт за сегодня уже есть, укажите `--skip-existing`.
 
 Однократный запуск:
 
 ```powershell
 python .\daily-report.py --project-dir "C:\path\to\your\project"
+```
+
+Пример с дополнительными полями Issue:
+
+```powershell
+python .\daily-report.py --project-dir "C:\path\to\your\project" --label "daily-report" --project "Roadmap" --milestone "Q1"
 ```
 
 Для ежедневного запуска от имени текущего пользователя зарегистрируйте отдельную задачу Windows Task Scheduler для этого проекта:
@@ -68,4 +74,4 @@ python .\daily-report.py --project-dir "C:\path\to\your\project"
 python .\daily-report.py --project-dir "C:\path\to\your\project" --install-schedule --time 09:00 --provider auto
 ```
 
-По умолчанию задача запускается ежедневно в 09:00 по местному времени и также при следующем входе в Windows, если компьютер пропустил расписание. Запланированный запуск пропускает создание, если репорт за сегодня уже существует; если компьютер выключен весь день, отдельный репорт за пропущенную дату не создаётся. В `auto` сначала используется Copilot CLI, запущенный в целевом проекте, затем DeepSeek с `DEEPSEEK_API_KEY` из переменной окружения или `.env` этого проекта. Нужны авторизованный `gh` и права создавать Issues. Расписание для этого проекта можно удалить командой `python .\daily-report.py --project-dir "C:\path\to\your\project" --uninstall-schedule`.
+По умолчанию задача запускается ежедневно в 09:00 по местному времени и также при следующем входе в Windows, если компьютер пропустил расписание. Параметры assignee, labels, project и milestone сохраняются в расписании. Для добавления в project также требуется scope `project` (`gh auth refresh -s project`). Запланированный запуск пропускает создание, если репорт за сегодня уже существует; если компьютер выключен весь день, отдельный репорт за пропущенную дату не создаётся. В `auto` сначала используется Copilot CLI, запущенный в целевом проекте, затем DeepSeek с `DEEPSEEK_API_KEY` из переменной окружения или `.env` этого проекта. Нужны авторизованный `gh` и права создавать Issues. Расписание для этого проекта можно удалить командой `python .\daily-report.py --project-dir "C:\path\to\your\project" --uninstall-schedule`.

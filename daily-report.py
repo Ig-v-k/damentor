@@ -252,24 +252,48 @@ def find_daily_issue(root: Path, repo: str, today: date) -> str | None:
     return None
 
 
-def create_issue(root: Path, repo: str, today: date, report: dict[str, str]) -> str:
+def create_issue(
+    root: Path,
+    repo: str,
+    today: date,
+    report: dict[str, str],
+    assignee: str,
+    labels: list[str],
+    project: str | None,
+    milestone: str | None,
+) -> str:
     title = f"[D][{report['kind']}] {today.isoformat()}: {report['title']}"
-    result = run_command(
-        [
-            "gh",
-            "issue",
-            "create",
-            "--repo",
-            repo,
-            "--title",
-            title,
-            "--body",
-            report["body"],
-        ],
-        root,
-    )
+    is_feature = report["kind"] == "F"
+    command = [
+        "gh",
+        "issue",
+        "create",
+        "--repo",
+        repo,
+        "--title",
+        title,
+        "--body",
+        report["body"],
+        "--type",
+        "Feature" if is_feature else "Bug",
+        "--assignee",
+        assignee,
+        "--label",
+        "enhancement" if is_feature else "bug",
+    ]
+    for label in labels:
+        command.extend(["--label", label])
+    if project:
+        command.extend(["--project", project])
+    if milestone:
+        command.extend(["--milestone", milestone])
+
+    result = run_command(command, root)
     if result.returncode != 0:
-        raise RuntimeError("GitHub did not create the daily report; check gh auth and permissions.")
+        raise RuntimeError(
+            "GitHub did not create the daily report; check gh auth, permissions, "
+            "and that the requested labels, type, project, and milestone exist."
+        )
     url = result.stdout.strip().splitlines()[-1] if result.stdout.strip() else ""
     if not re.fullmatch(r"https://\S+/issues/\d+", url):
         raise RuntimeError("GitHub created the report but did not return a recognizable Issue URL.")
@@ -285,20 +309,35 @@ def schedule_task_name(root: Path) -> str:
     return f"Damentor Daily Report {project_id}"
 
 
-def install_schedule(root: Path, provider: str, run_time: str) -> None:
+def install_schedule(
+    root: Path,
+    provider: str,
+    run_time: str,
+    assignee: str,
+    labels: list[str],
+    project: str | None,
+    milestone: str | None,
+) -> None:
     if os.name != "nt":
         raise RuntimeError("Task Scheduler setup is available only on Windows.")
 
-    action_args = subprocess.list2cmdline(
-        [
-            str(Path(__file__).resolve()),
-            "--project-dir",
-            str(root),
-            "--provider",
-            provider,
-            "--skip-existing",
-        ]
-    )
+    scheduled_command = [
+        str(Path(__file__).resolve()),
+        "--project-dir",
+        str(root),
+        "--provider",
+        provider,
+        "--skip-existing",
+        "--assignee",
+        assignee,
+    ]
+    for label in labels:
+        scheduled_command.extend(["--label", label])
+    if project:
+        scheduled_command.extend(["--project", project])
+    if milestone:
+        scheduled_command.extend(["--milestone", milestone])
+    action_args = subprocess.list2cmdline(scheduled_command)
     task_name = schedule_task_name(root)
     script = "; ".join(
         [
@@ -376,6 +415,19 @@ def main() -> int:
         help="Skip creation if a report for today already exists.",
     )
     parser.add_argument(
+        "--assignee",
+        default="@me",
+        help="GitHub login to assign the report to (default: @me).",
+    )
+    parser.add_argument(
+        "--label",
+        action="append",
+        default=[],
+        help="Additional existing GitHub label; may be specified more than once.",
+    )
+    parser.add_argument("--project", help="GitHub project title to add the report to.")
+    parser.add_argument("--milestone", help="GitHub milestone title for the report.")
+    parser.add_argument(
         "--time",
         type=parse_time,
         default="09:00",
@@ -394,7 +446,15 @@ def main() -> int:
             print("Daily report schedule removed.")
             return 0
         if args.install_schedule:
-            install_schedule(root, args.provider, args.time)
+            install_schedule(
+                root,
+                args.provider,
+                args.time,
+                args.assignee,
+                args.label,
+                args.project,
+                args.milestone,
+            )
             print(f"Daily report scheduled for {args.time}; it can run after the next logon if missed.")
             return 0
 
@@ -407,7 +467,16 @@ def main() -> int:
                 return 0
 
         report = generate_report(root, args.provider)
-        issue_url = create_issue(root, repo, today, report)
+        issue_url = create_issue(
+            root,
+            repo,
+            today,
+            report,
+            args.assignee,
+            args.label,
+            args.project,
+            args.milestone,
+        )
         print(f"Created today's report: {issue_url}")
         return 0
     except (OSError, RuntimeError) as exc:
