@@ -14,8 +14,12 @@ venv/
 # Build and tooling output
 build/
 dist/
+*.egg-info/
 .pytest_cache/
 .ruff_cache/
 
 # Local logs
 *.log
+
+# Damentor history of suggested files
+.damentor/

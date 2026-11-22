@@ -8,7 +8,11 @@
   2. Отправляет контекст в Copilot CLI или DeepSeek.
   3. Создаёт GitHub Issue через `gh`.
   4. Показывает человеку предложенный diff и изменяет файл только после подтверждения.
-- Основной исполняемый файл: `daily-mentor.py`.
+- Пакет библиотеки: `damentor/` (`config`, `shell`, `providers`, `context`, `jsonio`, `github`, `history`, `core`, `interactive`, `cli`).
+- Точка входа CLI: `damentor.cli:main` (console script `damentor`, `python -m damentor`).
+- `daily-mentor.py` — тонкий wrapper для обратной совместимости; логику в нём не держать.
+- Запуск без установки Python: `launcher/damentor.cmd` (обёртка) и `launcher/damentor.ps1` (скачивает автономный CPython в `%LOCALAPPDATA%\Damentor`).
+- Упаковка для `pip`: `pyproject.toml` (`requires-python = ">=3.10"`).
 - Поддерживаемая версия Python: 3.10+.
 - Целевая среда: Windows PowerShell.
 
@@ -119,7 +123,7 @@
 - Для изменения Python сначала проверяй синтаксис:
 
   ```powershell
-  python -m py_compile .\daily-mentor.py
+  python -m compileall -q .\damentor .\daily-mentor.py
   ```
 
 - Запускай минимальную проверку, покрывающую изменённое поведение.
