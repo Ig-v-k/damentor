@@ -1,6 +1,25 @@
 # Damentor
 
+[![CI](https://github.com/Ig-v-k/damentor/actions/workflows/ci.yml/badge.svg)](https://github.com/Ig-v-k/damentor/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor/releases)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+[![License](https://img.shields.io/badge/License-TBD-orange)](#license)
+[![GitHub stars](https://img.shields.io/github/stars/Ig-v-k/damentor?style=social)](https://github.com/Ig-v-k/damentor/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor/issues)
+[![Last commit](https://img.shields.io/github/last-commit/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor/commits/main)
+[![Repository size](https://img.shields.io/github/repo-size/Ig-v-k/damentor)](https://github.com/Ig-v-k/damentor)
+
 Небольшой Python-скрипт, который анализирует один файл проекта, предлагает улучшение, создаёт для него GitHub Issue и при подтверждении предлагает изменение файла.
+
+## Статус проекта
+
+Проект находится в активной разработке. Основной сценарий стабилен по назначению, но API и структура файлов могут ещё меняться.
+
+## License
+
+Лицензия временно не выбрана (TBD). После выбора лицензии этот раздел и бейдж будут обновлены.
 
 ## Требования
 
