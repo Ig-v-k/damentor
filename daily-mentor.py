@@ -16,7 +16,10 @@ ALLOWED_EXT = {".py", ".js", ".ts", ".tsx", ".go", ".rs", ".java", ".php", ".rb"
 
 def run_cmd(cmd: list[str], input_text: str | None = None) -> tuple[int, str]:
     res = subprocess.run(cmd, input=input_text, text=True, capture_output=True)
-    return res.returncode, (res.stdout + "\n" + res.stderr).strip()
+    output = res.stdout
+    if res.returncode != 0:
+        output = "\n".join(part for part in (res.stdout, res.stderr) if part)
+    return res.returncode, output.strip()
 
 
 def ask_ai(prompt: str) -> str:
@@ -147,7 +150,12 @@ def main():
     fix = extract_json(ask_ai(fix_prompt))
     updated_content = fix.get("updated_content")
     summary = fix.get("summary")
-    if not isinstance(updated_content, str) or not isinstance(summary, str) or not summary.strip():
+    if (
+        not isinstance(updated_content, str)
+        or not updated_content.strip()
+        or not isinstance(summary, str)
+        or not summary.strip()
+    ):
         raise ValueError("ИИ вернул некорректный результат изменения файла.")
 
     current_content = Path(filepath).read_text(encoding="utf-8", errors="ignore")
