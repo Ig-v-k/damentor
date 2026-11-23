@@ -54,12 +54,18 @@ python .\daily-mentor.py
 
 ## Ежедневный репорт
 
-`daily-report.py` — отдельный сценарий: каждый обычный запуск создаёт новый короткий feature/bug Issue в указанном GitHub-репозитории и не изменяет файлы. Скрипт автоматически задаёт тип `Feature`/`Bug`, label `enhancement`/`bug` и назначает Issue текущему пользователю (`@me`). Дополнительные labels, проект и milestone можно задать параметрами `--label`, `--project` и `--milestone`; `--label` можно указывать несколько раз. В заголовке используются ASCII-маркеры `[D]` (daily), `[F]` (feature) или `[B]` (bug) и дата. Для ручного запуска с пропуском, если репорт за сегодня уже есть, укажите `--skip-existing`.
+`daily-report.py` — отдельный сценарий: каждый обычный запуск создаёт новый короткий feature/bug Issue в указанном GitHub-репозитории и не изменяет файлы. Скрипт автоматически задаёт тип `Feature`/`Bug`, label `enhancement`/`bug` и назначает Issue текущему пользователю (`@me`). Дополнительные labels, проект и milestone можно задать параметрами `--label`, `--project` и `--milestone`; `--label` можно указывать несколько раз. В заголовке используются ASCII-маркеры `[D]` (daily), `[F]` (feature) или `[B]` (bug) и дата. Для ручного запуска с пропуском, если репорт за сегодня уже есть, укажите `--skip-existing`. Параметр `--dry-run` показывает планируемый заголовок, тип, assignee и labels репорта, не создавая Issue.
 
 Однократный запуск:
 
 ```powershell
 python .\daily-report.py --project-dir "C:\path\to\your\project"
+```
+
+Предпросмотр репорта без создания Issue:
+
+```powershell
+python .\daily-report.py --project-dir "C:\path\to\your\project" --dry-run
 ```
 
 Пример с дополнительными полями Issue:
