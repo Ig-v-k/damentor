@@ -392,7 +392,7 @@ def uninstall_schedule(root: Path) -> None:
     task_name = schedule_task_name(root)
     legacy_task_name = legacy_schedule_task_name(root)
     task_names = (task_name, legacy_task_name)
-    script_parts = []
+    script_parts = ["$ErrorActionPreference = 'Stop'"]
     for index, name in enumerate(task_names):
         variable = f"$task{index}"
         script_parts.extend(
@@ -400,13 +400,14 @@ def uninstall_schedule(root: Path) -> None:
                 f"{variable} = Get-ScheduledTask -TaskName {powershell_quote(name)} "
                 "-ErrorAction SilentlyContinue",
                 f"if ($null -ne {variable}) {{ Unregister-ScheduledTask "
-                f"-TaskName {powershell_quote(name)} -Confirm:$false }}",
+                f"-TaskName {powershell_quote(name)} -Confirm:$false -ErrorAction Stop }}",
             ]
         )
     script_parts.append(
         "if ($null -eq $task0 -and $null -eq $task1) "
         "{ Write-Error 'Scheduled task not found'; exit 1 }"
     )
+    script_parts.append("exit 0")
     script = "; ".join(script_parts)
     result = subprocess.run(
         ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -415,7 +416,18 @@ def uninstall_schedule(root: Path) -> None:
         check=False,
     )
     if result.returncode != 0:
-        raise RuntimeError(f"Could not remove the Windows task: {result.stderr.strip()}")
+        error = "\n".join(
+            output.strip() for output in (result.stderr, result.stdout) if output.strip()
+        )
+        if not error:
+            error = f"PowerShell exited with status {result.returncode} and returned no error details."
+        if "0x80070005" in error.lower():
+            raise RuntimeError(
+                "Windows denied removing the scheduled task (0x80070005). "
+                "Retry this command in PowerShell opened with 'Run as administrator'. "
+                "If access is still denied, ask an administrator to check Task Scheduler permissions."
+            )
+        raise RuntimeError(f"Could not remove the Windows task: {error}")
 
 
 def main() -> int:
